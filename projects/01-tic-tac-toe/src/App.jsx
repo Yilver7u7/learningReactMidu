@@ -1,59 +1,17 @@
-import { useState } from 'react'
 import './App.css'
+import { TURNS } from './contants/contants'
+import { useState } from 'react'
+import {Square} from './components/Square'
+import confetti from 'canvas-confetti'
+import {checkWinner as checkWinnerForm} from './logic/logic'
+import { checkEndGame } from './logic/logic'
+import { WinnerModal } from './components/WinnerModal'
 
-const TURNS = {
-  X: 'X',
-  O: 'O',
-}
-
-// eslint-disable-next-line react/prop-types
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? 'is-selected' :''}`
-  
-  const handleBoard = () => {
-    updateBoard(index)
-  }
-
-  return (
-    <div onClick={handleBoard} className={className}>
-      {children}
-    </div>
-  )
-}
-
-const WINNER_COMBOS = [
-  [0,1,2],
-  [3,4,5],
-  [6,7,8],
-  [0,3,6],
-  [1,4,7],
-  [2,5,8],
-  [2,4,6],
-  [0,4,8],
-]
 
 function App() {
   const [board, setBoard] = useState(Array(9).fill(null))
   const [turn, setTurn] = useState(TURNS.X)
   const [winner, setWinner] = useState(null)
-
-
-  const checkWinner = ( boardToCheck ) => {
-    //Revisamos si alguna de las combinaciones actuales detemina un ganador
-    for (const combo of WINNER_COMBOS){
-      const [a,b,c] = combo
-      if (
-        boardToCheck[a] && //Primero revisamos que valor tiene el primer cuadro
-        boardToCheck[a] === boardToCheck[b] && //Luego si tiene el mismo valor las otras posiciones al primero
-        boardToCheck[a] === boardToCheck[c] 
-      ){
-        return boardToCheck[a]
-      }
-    }
-    //Si no hay ganador hasta que se vuelva dar click en no se revisaran
-    //de y hasta que encuentre un ganador o se acaben los turnos no se detiene
-    return null
-  }
 
   const resetGame = () => {
     setBoard(Array(9).fill(null))
@@ -75,19 +33,23 @@ function App() {
     setTurn(newTurn)
 
     //Deteminamos al GANADOR
-    const newWinner = checkWinner(newBoard)
+    const newWinner = checkWinnerForm(newBoard)
     if(newWinner){
+      confetti()
       setWinner(newWinner)
-    }// TODO: Check if game is over
+    }else if(checkEndGame(newBoard)){
+      setWinner(false)
+    }
   }
 
   return (
     <>
     <main className='board'>
       <h1>TIC TOC TOE</h1>
+      <button onClick={resetGame}>Reset del juego</button>
       <section className='game'>
         {
-          board.map((_, index) => {
+          board.map((square, index) => {
             return (
               <div className='cell' key={index}>
                 <Square
@@ -95,7 +57,7 @@ function App() {
                 index={index}
                 updateBoard={updateBoard}
                 >
-                  {board[index]}
+                  {square}
                 </Square>
               </div>
             )
@@ -112,32 +74,7 @@ function App() {
           {TURNS.O}
         </Square>
       </section>
-
-    {/* Este es el modal que indica quien fue el ganador */}
-      {
-        winner !== null && (
-          <section className='winner'>
-            <div className='text'>
-              <h2>
-                {
-                  winner === false
-                    ? 'Empate'
-                    : 'Ganador '+ winner
-                }
-              </h2>
-              <header className='win'>
-                {winner && <Square>{winner}</Square>}
-              </header>
-
-              <footer>
-                <button onClick={resetGame}>Empezar de nuevo</button>
-              </footer>
-            </div>
-          </section>
-        )
-      }
-
-
+      <WinnerModal winner={winner} resetGame={resetGame}/>
     </main>
     </>
   )
