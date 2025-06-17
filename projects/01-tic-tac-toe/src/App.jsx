@@ -29,6 +29,7 @@ const WINNER_COMBOS = [
   [1,4,7],
   [2,5,8],
   [2,4,6],
+  [0,4,8],
 ]
 
 function App() {
@@ -71,7 +72,7 @@ function App() {
     const newWinner = checkWinner(newBoard)
     if(newWinner){
       setWinner(newWinner)
-    }
+    }// TODO: Check if game is over
   }
 
   return (
@@ -105,6 +106,30 @@ function App() {
           {TURNS.O}
         </Square>
       </section>
+
+    {/* Este es el modal que indica quien fue el ganador */}
+      {
+        winner !== null && (
+          <section className='winner'>
+            <div className='text'>
+              <h2>
+                {
+                  winner === false
+                    ? 'Empate'
+                    : 'Ganador '+ winner
+                }
+              </h2>
+              <header className='win'>
+                {winner && <Square>{winner}</Square>}
+              </header>
+
+              <footer>
+                <button>Empezar de nuevo</button>
+              </footer>
+            </div>
+          </section>
+        )
+      }
 
 
     </main>
